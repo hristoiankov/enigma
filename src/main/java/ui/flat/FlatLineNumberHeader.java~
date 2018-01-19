@@ -1,0 +1,173 @@
+package ui.flat;
+
+import com.sun.deploy.util.StringUtils;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Utilities;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+/**
+ * Created by Hristo on 5/1/2016.
+ */
+public class FlatLineNumberHeader extends JList {
+
+    private static final int MIN_NUM_LINES = 1;
+    private JTextPane textPane;
+    private int numLines;
+
+    public FlatLineNumberHeader(final JTextPane textPane) {
+        this(textPane,
+                new Color(0,0,0), new Color(100,100,100), new Color(51,204,255), new Color(0,0,0));
+    }
+
+    public FlatLineNumberHeader(final JTextPane textPane,
+                                final Color backgroundColor,
+                                final Color foregroundColor,
+                                final Color selectionBackgroundColor,
+                                final Color selectionForegroundColor) {
+        super(new Integer[]{1,2,3,4});
+        this.textPane = textPane;
+        this.setMinimumSize(new Dimension(25,25));
+        this.setFixedCellWidth(25);
+        this.setLayoutOrientation(JList.VERTICAL);
+        this.setBorder(BorderFactory.createEmptyBorder(3,0,0,2));
+        DefaultListCellRenderer renderer =  (DefaultListCellRenderer)this.getCellRenderer();
+        renderer.setHorizontalAlignment(JLabel.RIGHT);
+        this.setBackground(backgroundColor);
+        this.setForeground(foregroundColor);
+        this.setSelectionBackground(selectionBackgroundColor);
+        this.setSelectionForeground(selectionForegroundColor);
+
+        this.attachEventHandlers();
+    }
+
+    /**
+     * Attach the event handlers if not already attached
+     */
+    public void attachEventHandlers() {
+
+        DocumentListener documentListener = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                // invoke when the document goes into a stable state
+                SwingUtilities.invokeLater(() -> populateLineNumbers());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> populateLineNumbers());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(() -> populateLineNumbers());
+            }
+        };
+
+        // event handler for window resizes
+        textPane.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                populateLineNumbers();
+            }
+        });
+
+        // attach the document event handler
+        textPane.getDocument().addDocumentListener(documentListener);
+
+        // re-attach event handler when the document is replaced
+        textPane.addPropertyChangeListener("document",
+                evt -> textPane.getDocument().addDocumentListener(documentListener));
+
+    }
+
+
+    /**
+     * determine the size of the textPane
+     * then determine the number of lines of text
+     * that height represents
+     */
+    private void populateLineNumbers() {
+        //int paneHeight = textPane.getHeight();
+        int lineHeight = this.textPane.getFontMetrics(this.textPane.getFont()).getHeight();
+        //int numLines = paneHeight / lineHeight;
+        int numLines = getRowCount(this.textPane);
+        if(numLines < MIN_NUM_LINES) numLines = MIN_NUM_LINES;
+
+        // if this line count is already represented by the
+        // list, then do not continue
+        if(numLines == this.numLines)
+            return;
+
+        this.numLines = numLines;
+
+        Integer numList[] = new Integer[numLines];
+        for(int i = 0; i < numLines; i++) {
+            numList[i] = i+1;
+        }
+        this.setListData(numList);
+        this.setFixedCellHeight(lineHeight);
+
+        int maxWidth = this.textPane.getFontMetrics(this.textPane.getFont()).stringWidth("" + numLines);
+        this.setFixedCellWidth(maxWidth+5);
+    }
+
+    /**
+     * Get the count of rows for the given JTextPane
+     * @return
+     */
+    public static int getRowCount(final JTextPane textPane) {
+        //int characterCount = textPane.getDocument().getLength();
+        //return getRowIndex(textPane, characterCount - 1);
+        return (int)textPane.getText().toString().chars()
+                .filter(character -> character == '\n').count() + 1;
+    }
+
+    /**
+     * Get the row index of the row at the given offset into the JTextPane\
+     * @param offset offset into the document
+     * @return
+     */
+    public static int getRowIndex(final JTextPane textPane, int offset) {
+        //
+        // recreate this method using string manipulations only
+        // try indexing the new line characters and count up
+        // until you find the new line character you are interested in.
+        //
+        int rowIndex = 0;
+        int rowStartOffset = offset;
+        //textPane.getText().split
+        while(rowStartOffset > 0) {
+            try {
+                rowStartOffset = Utilities.getRowStart(textPane, rowStartOffset) - 1;
+                rowIndex++;
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+        return rowIndex;
+    }
+
+    /**
+     * Get the column index of the column at the given offset into the JTextPane
+     * @param offset offset into the document
+     * @return
+     */
+    public static int getColumnIndex(final JTextPane textPane, int offset) {
+        try {
+            int rowStart = Utilities.getRowStart(textPane, offset);
+            return offset - rowStart + 1;
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
