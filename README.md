@@ -35,14 +35,15 @@ When the encrypted image is opened and the correct key is supplied, these are th
 ---
 
 **Detailed Specifications:**
-Hashing Algorithm: SHA-1 + random salt
-Cipher Algorithm: AES
-Encryption Algorithm: AES128 + random initialialization vector (iv)
-Steganography Algorithm: Least Significant Bit (LSB)
+* Hashing Algorithm: SHA-1 + random salt
+* Cipher Algorithm: AES
+* Encryption Algorithm: AES128 + random initialialization vector (iv)
+* Steganography Algorithm: Least Significant Bit (LSB)
 
 **System Requirements:**
-Operating System: Windows, Linux, Unix
-Minimum Java Version: Java 8
+* Operating System: Windows, Linux, Unix
+* Minimum Java Version: Java 8
 
 **Downloads:**
+
 The download is in a work-in-progress beta stage.
