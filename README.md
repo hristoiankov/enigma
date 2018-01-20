@@ -30,7 +30,7 @@ The two images above are visually the same. The image on the right uses the left
 
 When the encrypted image is opened and the correct key is supplied, these are the contents revealed. The password for the image is **password** for anyone that wants to try this themselves.
 
-**Warning**: Be careful when encrypting data. If the key is lost or forgotten, the data will be lost forever.
+***Warning**: Be careful when encrypting data. If the key is lost or forgotten, the data will be lost forever.*
 
 ---
 
