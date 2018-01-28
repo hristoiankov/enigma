@@ -1,5 +1,7 @@
 package ui.flat;
 
+import javafx.scene.text.Font;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -63,16 +65,16 @@ public class Flat {
 	public static class FlatMenu extends JMenu {
 		public FlatMenu(String name, FlatColorPalette palette) {
 			super(name);
-			new FlatComponentListener(this, palette);
-			//this.setMenuLocation(this.getWidth(), this.getHeight());
+			//new FlatComponentListener(this, palette);
+			new FlatComponentListener(this, palette, new BorderDimensions(0,0,0,0),
+					new BorderDimensions(4,4,4,4));
 		}
 	}
 	public static class FlatMenuItem extends JMenuItem {
 		public FlatMenuItem(String name, FlatColorPalette palette) {
 			super(name);
-			new FlatComponentListener(this, palette, new BorderDimensions(4,4,4,4), 
-					new BorderDimensions(0,0,0,0));
-			//this.setPreferredSize(new Dimension(200,this.getPreferredSize().height));
+			new FlatComponentListener(this, palette, new BorderDimensions(0,0,0,0),
+					new BorderDimensions(4,4,4,4));
 		}
 	}
 	public static class FlatPanel extends JPanel {
@@ -102,8 +104,8 @@ public class Flat {
 	public static class FlatButton extends JButton {
 		public FlatButton(String name, FlatColorPalette palette) {
 			super(name);
-			new FlatComponentListener(this, palette, new BorderDimensions(2,2,2,2),
-					new BorderDimensions(0,3,0,3));
+			new FlatComponentListener(this, palette, new BorderDimensions(0,0,0,0),
+					new BorderDimensions(4,4,4,4));
 		}
 	}
 	public static class FlatScrollPane extends JScrollPane {

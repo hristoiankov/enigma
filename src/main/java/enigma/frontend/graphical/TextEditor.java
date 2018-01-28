@@ -60,7 +60,7 @@ public class TextEditor extends FlatFrame {
 	private JPanel contentPane2;
 	private FindPanel findPane;
 	private EditorPanel editorPane;
-	private JScrollPane editorScrollPane;;
+	private JScrollPane editorScrollPane;
 	private FlatScrollBar editorVerticalScrollBar;
 	private ConsolePanel consolePane;
 	private JScrollPane consoleScrollPane;

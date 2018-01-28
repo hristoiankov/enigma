@@ -62,7 +62,7 @@ public class FlatDialog extends JDialog implements
 	protected Color titleBarBackgroundColor;
 	protected Color titleBarForegroundColor;
 	
-	protected int borderWidth = 8;
+	protected int borderWidth = 4;
     private int cursorDirectionCurrent = Cursor.DEFAULT_CURSOR;
     private int cursorDirectionStart = Cursor.DEFAULT_CURSOR;
     private Point startPoint;
@@ -86,7 +86,7 @@ public class FlatDialog extends JDialog implements
     	textArea.setForeground(frameForegroundColor);
     	textArea.setBackground(frameBackgroundColor);
     	textArea.setBorder(BorderFactory.createMatteBorder(
-        		borderWidth, borderWidth, borderWidth, borderWidth, 
+        		4,8,0,8,
         		frameBackgroundColor));
     	
     	this.setContent(textArea);

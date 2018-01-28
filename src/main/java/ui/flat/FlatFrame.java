@@ -140,14 +140,11 @@ public class FlatFrame extends JFrame implements
 	private void attachEvents() {
 		closeButton.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {
-		    	//window.closeApplication();
 		    	window.dispose();
 		    }
 		});
 		minimizeButton.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {
-		    	//window.closeApplication();
-		    	window.dispose();
 		    	if(window.getExtendedState() == JFrame.ICONIFIED) {
 		    		window.setExtendedState(JFrame.NORMAL);
 		    	} else {
