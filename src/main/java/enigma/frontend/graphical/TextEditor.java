@@ -5,12 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +22,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import enigma.backend.EncryptionSystem;
 import enigma.backend.SteganographySystem;
+import enigma.backend.utils.ValidationUtils;
 import ui.flat.FlatFrame;
 import ui.flat.component.FlatButton;
 import ui.flat.component.FlatLineNumberHeader;
@@ -61,12 +57,12 @@ import ui.flat.settings.FlatColorPalette;
 
 public class TextEditor extends FlatFrame {
 	
-	private static String APP_TITLE = "Enigma Text Editor";
+	private static final String APP_TITLE = "Enigma Text Editor";
 	private static float APP_VERSION = 0.15f;
-	private static int APP_YEAR = 2018;
-	private static int CONSOLE_TIMEOUT_SHORT = 3000;
-	private static int CONSOLE_TIMEOUT_LONG = 8000;
-	private int tabSpacing = 4;
+	private static final int APP_YEAR = 2018;
+	private static final int CONSOLE_TIMEOUT_SHORT = 3000;
+	private static final int CONSOLE_TIMEOUT_LONG = 8000;
+	private static final int CONSOLE_DETECTION_HEIGHT = 10;
 	private JPanel contentPane2;
 	private FindPanel findPane;
 	private EditorPanel editorPane;
@@ -236,8 +232,21 @@ public class TextEditor extends FlatFrame {
 	}
 	
 	private void setComponentEvents() {
-
         consolePane.addFocusListener(consoleFocusListener);
+        this.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				int height = getHeight();
+				if (e.getY() >= height - CONSOLE_DETECTION_HEIGHT) {
+					showConsole(CONSOLE_TIMEOUT_LONG, 2);
+				}
+			}
+		});
 	}
 	
 	private void setEditorStyling() {
@@ -247,6 +256,7 @@ public class TextEditor extends FlatFrame {
 		editorBackgroundColor = this.frameBackgroundColor;
 		editorForegroundColor = this.frameForegroundColor;
 		selectionBackgroundColor = new Color(51,204,255);
+		selectionForegroundColor = new Color(0, 0, 0);
         
         menuBar.setBackground(editorBackgroundColor);
         menuBar.setForeground(editorForegroundColor);
@@ -764,26 +774,29 @@ public class TextEditor extends FlatFrame {
 		// of text, then the console should expand large enough
 		// to encompass all the text.  The console should
 		// also remain longer when more text is displayed.
-		
-    	int lineHeight = consolePane.getFontMetrics(consoleFont).getHeight();
+
     	int numLines = text.replaceAll("[^\n]", "").length() + 1;
-    	int paneHeight = lineHeight * numLines;
-    	consoleScrollPane.setPreferredSize(
-    			new Dimension(consoleScrollPane.getWidth(), paneHeight + 2));
-    	consolePane.setPreferredSize(new Dimension(consoleScrollPane.getWidth(), paneHeight));
-		
+		consolePane.setText((ValidationUtils.isEmpty(consolePane.getText())
+				? "" : consolePane.getText()) + "\n" + text);
+		consolePane.setCaretPosition(consolePane.getText().length());
+		this.showConsole(numLines > 1 ? CONSOLE_TIMEOUT_LONG : CONSOLE_TIMEOUT_SHORT, numLines);
+	}
+
+	/**
+	 * Show the console for a specified amount of time
+	 *
+	 * @param milliseconds
+	 */
+	private void showConsole(final int milliseconds, final int numLines) {
+		int lineHeight = consolePane.getFontMetrics(consoleFont).getHeight();
+		int paneHeight = lineHeight * numLines;
+		consoleScrollPane.setPreferredSize(
+				new Dimension(consoleScrollPane.getWidth(), paneHeight + 2));
+		consolePane.setPreferredSize(new Dimension(consoleScrollPane.getWidth(), paneHeight));
 		contentPane.add(consoleScrollPane, BorderLayout.SOUTH);
 		contentPane.revalidate();
-		consolePane.setText(consolePane.getText() + "\n" + text);
-		consolePane.setCaretPosition(consolePane.getText().length());
-		//System.out.println(text);
-		
-		if(numLines > 1) {
-			closeConsoleTimer.setInitialDelay(CONSOLE_TIMEOUT_LONG);
-		} else {
-			closeConsoleTimer.setInitialDelay(CONSOLE_TIMEOUT_SHORT);
-		}
-		
+
+		closeConsoleTimer.setInitialDelay(milliseconds);
 		// start the close procedure
 		if(closeConsoleTimer.isRunning()) {
 			closeConsoleTimer.stop();
