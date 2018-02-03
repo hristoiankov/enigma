@@ -1,4 +1,4 @@
-package ui.flat;
+package ui.flat.component.scrollbar;
 
 import java.awt.Color;
 import java.awt.Dimension;

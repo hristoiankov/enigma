@@ -1,103 +1,117 @@
-package ui.flat;
+package ui.flat.dialog;
 
 import ui.flat.component.FlatButton;
-import ui.flat.component.FlatPanel;
-import ui.flat.component.menu.FlatMenuBar;
 import ui.flat.settings.FlatColorPalette;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
-public class FlatFrame extends JFrame implements 
-	MouseListener, MouseMotionListener, ComponentListener{
+public class FlatDialog extends JDialog implements 
+	MouseListener, MouseMotionListener {
 	
-	private static final long serialVersionUID = 1L;
+	public static int YES_OPTION    = 0;
+	public static int NO_OPTION     = 1;
+	public static int CANCEL_OPTION = 2;
+	public static int OK_OPTION     = 3;
+	public static int CLOSED_OPTION = 4;
 
-	/**
-	 * Customizable Frame
-	 * - titlebar
-	 * - titlebar has menu & closeButton
-	 * - draggable by titlebar
-	 * - border
-	 * - resizable by border
-	 * - customizable colors
-	 * 
-	 * 
-	 */
-	protected FlatFrame window;
-	protected FlatPanel contentPane;
-	protected FlatPanel topPane;
-	protected FlatPanel topRightPane;
-	protected FlatMenuBar menuBar;
+	protected int dialogResponse;
+	
+	protected FlatDialog window;
+	protected JPanel contentPane;
+	protected JPanel topPane;
+	protected JMenuBar menuBar;
 	protected JLabel windowTitle;
 	protected FlatButton closeButton;
-	protected FlatButton minimizeButton;
+
 	
 	protected Color frameBackgroundColor;
 	protected Color frameForegroundColor;
 	protected Color frameBorderColor;
 	
-	protected int borderWidth = 2;
+	protected int borderWidth = 4;
     private int cursorDirectionCurrent = Cursor.DEFAULT_CURSOR;
     private int cursorDirectionStart = Cursor.DEFAULT_CURSOR;
     private Point startPoint;
-    
+	
+	protected Component parent;
+	protected WindowListener windowListener;
 
-	//-----------------------------------------------------
-	// Constructors
-	//-----------------------------------------------------
+	/*
+	Sample Simple Flat UI
+
+	new FlatDialog("Title")
+			.addCenter(new FlatTextArea()
+					.setText("Content"))
+			.addTop(new FlatMenuBar()
+					.add(new FlatMenu("File")
+							.add(new FlatMenuItem("New File", (ActionEvent) -> ...)))
+					.add(new FlatMenu("Edit")
+							.add(new FlatMenuItem("Copy", (ActionEvent) -> ...))
+			.addBottom(new FlatPanel()
+					.addLeft(new FlatButton("Okay", (ActionEvent) -> ...))
+					.addRight(new FlatButton("Cancel", (ActionEvent) -> ...)))
+
+	*/
+
+	/**
+	 *  Create a dialog with a simple text component
+	 *
+	 * @param parent
+	 * @param title
+	 * @param text
+	 */
+	public FlatDialog(JFrame parent, String title, String text) {
+		this(parent, title);
+    	JTextArea textArea = new JTextArea();
+    	textArea.setText(text);
+    	textArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+    	textArea.setEditable(false);
+    	textArea.setForeground(frameForegroundColor);
+    	textArea.setBackground(frameBackgroundColor);
+    	textArea.setBorder(BorderFactory.createMatteBorder(
+        		4,8,0,8,
+        		frameBackgroundColor));
+    	this.addCenter(textArea);
+	}
     
-    public FlatFrame(String title) {
-    	this(title, new Color(60,60,60), new Color(200,200,200),
-    				new Color(60,60,60));
-    }
-    
-	public FlatFrame(String title, 
-					 Color frameBackgroundColor, Color frameForegroundColor,
-					 Color frameBorderColor) {
-		super(title);
-        this.setMinimumSize(new Dimension(100,100));
+	public FlatDialog(Frame parent, String title, 
+			 Color frameBackgroundColor, Color frameForegroundColor,
+			 Color frameBorderColor) {
+		super(parent, true);
+		this.setMinimumSize(new Dimension(100,100));
 		this.frameBackgroundColor = frameBackgroundColor;
 		this.frameForegroundColor = frameForegroundColor;
 		this.frameBorderColor = frameBorderColor;
 		startPoint = new Point();
 		window = this;
+		this.setTitle(title);
 		
 		// set frame settings
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setUndecorated(true);
+		this.setUndecorated(true);
 		
 		// create components
 		createComponents();
-
-		// attach components (top panel)
-		topPane.add(this.menuBar, BorderLayout.WEST);
-		topPane.add(this.windowTitle, BorderLayout.CENTER);
-		topPane.add(this.topRightPane, BorderLayout.EAST);
-		topRightPane.add(this.minimizeButton);
-		topRightPane.add(this.closeButton);
-		contentPane.add(this.topPane, BorderLayout.NORTH);
-		this.setContentPane(this.contentPane);
+		
+		// attach components
+		topPane.add(menuBar, BorderLayout.WEST);
+		topPane.add(windowTitle, BorderLayout.CENTER);
+		topPane.add(closeButton, BorderLayout.EAST);
+		contentPane.add(topPane, BorderLayout.NORTH);
+		this.setContentPane(contentPane);
 		
 		// set styling
 		setStyling();
@@ -105,25 +119,69 @@ public class FlatFrame extends JFrame implements
 		System.setProperty("sun.awt.noerasebackground", "true");
 		
 		this.addMouseListener(this);
-        this.addMouseMotionListener(this);
-        this.addComponentListener(this);
+		this.addMouseMotionListener(this);
 	}
 	
+	public FlatDialog(Frame parent, String title) {
+		this(parent, title, Color.black, new Color(200,200,200), Color.black);
+		this.parent = parent;
+		this.setMinimumSize(new Dimension(200, 20));
+	}
+	
+	public int showDialog() {
+		dialogResponse = FlatDialog.CLOSED_OPTION;
+		this.setLocationRelativeTo(parent);
+		this.setVisible(true);
+		return dialogResponse;
+	}
+
+	public FlatDialog addTop(JComponent component) {
+		this.contentPane.add(component, BorderLayout.NORTH);
+		this.pack();
+		this.resizeToFitContent();
+		return this;
+	}
+	public FlatDialog addBottom(JComponent component) {
+		this.contentPane.add(component, BorderLayout.SOUTH);
+		this.pack();
+		this.resizeToFitContent();
+		return this;
+	}
+	public FlatDialog addLeft(JComponent component) {
+		this.contentPane.add(component, BorderLayout.WEST);
+		this.pack();
+		this.resizeToFitContent();
+		return this;
+	}
+	public FlatDialog addRight(JComponent component) {
+		this.contentPane.add(component, BorderLayout.EAST);
+		this.pack();
+		this.resizeToFitContent();
+		return this;
+	}
+	public FlatDialog addCenter(JComponent component) {
+		this.contentPane.add(component, BorderLayout.CENTER);
+		this.pack();
+		this.resizeToFitContent();
+		return this;
+	}
+
+	private void resizeToFitContent() {
+		this.setSize(new Dimension(
+			this.getContentPane().getSize().width + this.borderWidth * 2,
+			this.getContentPane().getSize().height + topPane.getHeight()
+			));
+	}
+
 	private void createComponents() {
-		this.contentPane = new FlatPanel(new BorderLayout());
-		this.topPane = new FlatPanel(new BorderLayout());
-		this.topRightPane = new FlatPanel();
-		this.topRightPane.setLayout(new BoxLayout(topRightPane, BoxLayout.X_AXIS));
-		this.menuBar = new FlatMenuBar();
-		this.closeButton = new FlatButton("Close", e -> window.closeApplication());
-		this.minimizeButton = new FlatButton("Min", FlatColorPalette.DEFAULT_PALETTE, e -> {
-			if(window.getExtendedState() == JFrame.ICONIFIED) {
-				window.setExtendedState(JFrame.NORMAL);
-			} else {
-				window.setExtendedState(JFrame.ICONIFIED);
-			}
-		});
-		this.windowTitle = new JLabel(this.getTitle());
+		contentPane = new JPanel(new BorderLayout());
+		topPane = new JPanel(new BorderLayout());
+		menuBar = new JMenuBar();
+		FlatColorPalette buttonPalette = new FlatColorPalette();
+		buttonPalette.setBackgroundColor(Color.black);
+		buttonPalette.setBorderColor(Color.black);
+		closeButton = new FlatButton("Close", buttonPalette, e -> this.setVisible(false));
+		windowTitle = new JLabel(this.getTitle());
 	}
 	
 	protected void setStyling() {
@@ -131,25 +189,13 @@ public class FlatFrame extends JFrame implements
 		this.setBackground(frameBackgroundColor);
 	    topPane.setForeground(frameForegroundColor);
 	    topPane.setBackground(frameBackgroundColor);
-	    topRightPane.setBackground(frameBackgroundColor);
 	    windowTitle.setForeground(frameForegroundColor);
 		closeButton.setFocusPainted(false);
-		minimizeButton.setFocusPainted(false);
 		windowTitle.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		// set panel border
-		int borderWidth = 2; //2
         this.getRootPane().setBorder(BorderFactory.createMatteBorder(
         		borderWidth, borderWidth, borderWidth, borderWidth, frameBorderColor));
-	}
-	
-	//-----------------------------------------------------
-	// Event Handlers
-	//-----------------------------------------------------
-	
-	@Override
-	public void update(Graphics g) {
-	    if (isShowing()) paint(g);
 	}
 	
 	//-----------------------------------------------------
@@ -275,61 +321,5 @@ public class FlatFrame extends JFrame implements
 		
 	}
 
-	//-----------------------------------------------------
-	// Component Listener Events
-	//-----------------------------------------------------
-
-	@Override
-	public void componentHidden(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void componentMoved(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void componentResized(ComponentEvent arg0) {
-		resizeWindow();
-	}
-
-	@Override
-	public void componentShown(ComponentEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	//-----------------------------------------------------
-	// Other Functions
-	//-----------------------------------------------------
-	
-    public void resizeWindow() {
-    	
-    	// maintain the content pane width
-		this.getContentPane().setSize(
-				(int) this.getSize().getWidth(), 
-				this.getContentPane().getHeight());
-		
-    }
-
-	/**
-	 * Close the application
-	 */
-	public void closeApplication() {
-    	// kill the jframe
-        window.dispose();
-        System.exit(0);
-    }
-
-    
-    
-    
-	
-	
-	
 	
 }

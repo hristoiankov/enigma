@@ -14,16 +14,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 
-import ui.flat.Flat;
-import ui.flat.Flat.FlatColorPalette;
-import ui.flat.FlatScrollBar;
+import ui.flat.component.FlatButton;
+import ui.flat.settings.FlatColorPalette;
+import ui.flat.component.FlatPanel;
+import ui.flat.component.FlatTextField;
+import ui.flat.component.scrollbar.FlatScrollBar;
 
-public class FindPanel extends Flat.FlatPanel{
+public class FindPanel extends FlatPanel {
     private static final int SEARCH_MARKER_CATEGORY = 0;
     private static final Color SEARCH_MARKER_COLOR = Color.yellow;
-    private Flat.FlatTextField searchField;
-    private Flat.FlatButton searchButton;
-    private Flat.FlatButton closeButton;
+    private FlatTextField searchField;
     private EditorPanel editorPane;
     private FlatScrollBar scrollBar;
     private SimpleAttributeSet highlightAttribute;
@@ -36,20 +36,20 @@ public class FindPanel extends Flat.FlatPanel{
         this.editorPane = editorPane;
         this.scrollBar = scrollBar;
 
-        searchField = new Flat.FlatTextField(palette);
-        searchButton = new Flat.FlatButton("Find Next", palette);
-        closeButton = new Flat.FlatButton("X", palette);
-
+        searchField = new FlatTextField(palette);
         searchField.setFont(new Font("Consolas", Font.PLAIN, 12));
         searchField.setSelectionColor(new Color(51,204,255));
-
         searchField.setSize(200, searchField.getHeight());
         searchField.setPreferredSize(new Dimension(200, searchField.getHeight()));
 
-        // add components
+        final FindPanel panel = this;
         this.add(searchField);
-        this.add(searchButton);
-        this.add(closeButton);
+        this.add(new FlatButton("Find Next", palette, e ->
+            findNextResult(panel.editorPane, panel.searchField.getText())));
+        this.add(new FlatButton("X", palette, e -> {
+            panel.setVisible(false);
+            resetHighlighting();
+        }));
 
         // set highlighting attribute color
         highlightAttribute = new SimpleAttributeSet();
@@ -62,19 +62,6 @@ public class FindPanel extends Flat.FlatPanel{
 
     private void initEventHandlers() {
         final FindPanel panel = this;
-
-        // button events
-        searchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                findNextResult(panel.editorPane, searchField.getText());
-            }
-        });
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.setVisible(false);
-                resetHighlighting();
-            }
-        });
 
         // focus event
         panel.addFocusListener(new FocusListener() {

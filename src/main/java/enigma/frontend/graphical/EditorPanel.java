@@ -1,6 +1,6 @@
 package enigma.frontend.graphical;
 
-import ui.flat.FlatLineNumberHeader;
+import ui.flat.component.FlatLineNumberHeader;
 
 import javax.swing.*;
 import java.util.List;

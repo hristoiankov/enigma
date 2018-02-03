@@ -27,8 +27,18 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import enigma.backend.EncryptionSystem;
 import enigma.backend.SteganographySystem;
-import ui.flat.*;
-import ui.flat.Flat.FlatColorPalette;
+import ui.flat.FlatFrame;
+import ui.flat.component.FlatButton;
+import ui.flat.component.FlatLineNumberHeader;
+import ui.flat.component.FlatPanel;
+import ui.flat.component.FlatScrollPane;
+import ui.flat.component.menu.FlatMenu;
+import ui.flat.component.menu.FlatMenuItem;
+import ui.flat.component.menu.FlatSeparator;
+import ui.flat.component.scrollbar.FlatScrollBar;
+import ui.flat.dialog.FlatDialog;
+import ui.flat.dialog.FlatPasswordDialog;
+import ui.flat.settings.FlatColorPalette;
 
 /**
  * Enigma Text Editor
@@ -52,8 +62,8 @@ import ui.flat.Flat.FlatColorPalette;
 public class TextEditor extends FlatFrame {
 	
 	private static String APP_TITLE = "Enigma Text Editor";
-	private static float APP_VERSION = 0.14f;
-	private static int APP_YEAR = 2016;
+	private static float APP_VERSION = 0.15f;
+	private static int APP_YEAR = 2018;
 	private static int CONSOLE_TIMEOUT_SHORT = 3000;
 	private static int CONSOLE_TIMEOUT_LONG = 8000;
 	private int tabSpacing = 4;
@@ -86,7 +96,9 @@ public class TextEditor extends FlatFrame {
 	private File openedFile;
 	private File imageFile;
 	private File encryptedFile;
-	
+
+	// state
+	private boolean documentChanged;
 
 	public TextEditor() {
 		super(APP_TITLE,
@@ -96,6 +108,9 @@ public class TextEditor extends FlatFrame {
         
         // reference self
         window = this;
+
+        // state
+        this.documentChanged = false;
         
         this.setMinimumSize(new Dimension(200,200));
         this.setSize(new Dimension(600,600));
@@ -117,8 +132,8 @@ public class TextEditor extends FlatFrame {
 
 		editorVerticalScrollBar = new FlatScrollBar(JScrollBar.VERTICAL);
 		FlatScrollBar editorHorizontalScrollBar = new FlatScrollBar(JScrollBar.HORIZONTAL);
-		editorScrollPane = new Flat.FlatScrollPane(editorPane,
-				this.getFlat().getPalette(), editorVerticalScrollBar,
+		editorScrollPane = new FlatScrollPane(editorPane,
+				FlatColorPalette.DEFAULT_PALETTE, editorVerticalScrollBar,
 				editorHorizontalScrollBar);
 		editorScrollPane.setVerticalScrollBarPolicy(
 		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -126,8 +141,8 @@ public class TextEditor extends FlatFrame {
 		consolePane = new ConsolePanel();
 		FlatScrollBar consoleVerticalScrollBar = new FlatScrollBar(JScrollBar.VERTICAL);
 		FlatScrollBar consoleHorizontalScrollBar = new FlatScrollBar(JScrollBar.HORIZONTAL);
-		consoleScrollPane = new Flat.FlatScrollPane(consolePane,
-				this.getFlat().getPalette(), consoleVerticalScrollBar,
+		consoleScrollPane = new FlatScrollPane(consolePane,
+				FlatColorPalette.DEFAULT_PALETTE, consoleVerticalScrollBar,
 				consoleHorizontalScrollBar);
 		consoleScrollPane.setHorizontalScrollBarPolicy(
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -149,13 +164,12 @@ public class TextEditor extends FlatFrame {
 		//
 		
 		// create find panel
-		FlatColorPalette findPanelPalette = this.getFlat().getPalette().clone();
-		Color tempColor = findPanelPalette.foregroundColor;
-		findPanelPalette.foregroundColor = findPanelPalette.backgroundColor;
-		findPanelPalette.backgroundColor = tempColor;
-		findPanelPalette.borderColor = tempColor;
-		findPanelPalette.hoverForegroundColor = findPanelPalette.backgroundColor;
-		findPanelPalette.hoverBackgroundColor = findPanelPalette.foregroundColor;
+		FlatColorPalette findPanelPalette = FlatColorPalette.DEFAULT_PALETTE.clone()
+				.setForegroundColor(FlatColorPalette.DEFAULT_PALETTE.getBackgroundColor())
+				.setBackgroundColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor())
+				.setBorderColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor())
+				.setHoverForegroundColor(FlatColorPalette.DEFAULT_PALETTE.getBackgroundColor())
+				.setHoverBackgroundColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor());
 		this.findPane = new FindPanel(findPanelPalette, editorPane,
 				editorVerticalScrollBar);
 		
@@ -194,6 +208,27 @@ public class TextEditor extends FlatFrame {
         writeConsole("Welcome to the " + APP_TITLE + ".\n" +
         			 "Version: " + APP_VERSION
         			 );
+	}
+
+	/**
+	 * Close the application
+	 */
+	@Override
+	public void closeApplication() {
+		if(this.documentChanged) {
+			// Display "There are unsaved changes, are you sure you want to close the application?"
+			FlatColorPalette darkPalette = new FlatColorPalette()
+					.setBackgroundColor(Color.black)
+					.setForegroundColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor());
+			FlatDialog dialog = new FlatDialog(this, "Unsaved Changes",
+					"There are unsaved changes, are you sure you want to close the application?");
+			dialog.addBottom(new FlatPanel(darkPalette)
+							.addLeft(new FlatButton("Okay", darkPalette, e -> super.closeApplication()))
+							.addRight(new FlatButton("Cancel", darkPalette, e -> dialog.dispose())));
+			dialog.showDialog();
+			return;
+		}
+		super.closeApplication();
 	}
 	
 	private void setFileFilters() {
@@ -274,191 +309,54 @@ public class TextEditor extends FlatFrame {
 	
 	private void populateTopPane() {
 		populateMenuBar();
-		attachMenuItemEvents();
-		setMenuItemMnemonics();
-		closeButton.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	window.closeApplication();
-		    }
-		});
 	}
-
-	Flat.FlatMenuItem menuNewFile, menuOpenFile, menuSaveFile, menuExit, 
-					  menuOpenEnc, menuSaveEnc, menuOpenEncSteg, menuSaveEncSteg,
-					  menuFind,
-					  menuExtract, menuDecrypt, menuEncrypt,
-					  menuOpenInBinViewer, menuCloseBinViewer,
-					  menuAbout, menuHowTo;
 	
 	private void populateMenuBar() {
-		Flat.FlatMenu fileMenu = new Flat.FlatMenu("File", this.getFlat().getPalette());
-		Flat.FlatMenu editMenu = new Flat.FlatMenu("Edit", this.getFlat().getPalette());
-		Flat.FlatMenu encrMenu = new Flat.FlatMenu("Encrypted", this.getFlat().getPalette());
-		Flat.FlatMenu advnMenu = new Flat.FlatMenu("Advanced", this.getFlat().getPalette());
-		Flat.FlatMenu viwrMenu = new Flat.FlatMenu("Binary Viewer", this.getFlat().getPalette());
-		Flat.FlatMenu helpMenu = new Flat.FlatMenu("Help", this.getFlat().getPalette());
-		Flat.FlatMenuItem menuItem;
-		
-		final ImageIcon menuIcon = new ImageIcon(TextEditor.class.getResource("/enigma-black_24.png"));
-        fileMenu.setIcon(menuIcon);
-        final Flat.FlatColorPalette separatorPalette = this.getFlat().getPalette().clone();
-        separatorPalette.foregroundColor = Color.black;
+
+        final FlatColorPalette separatorPalette = FlatColorPalette.DEFAULT_PALETTE.clone();
+        separatorPalette.setForegroundColor(Color.black);
 		
         // File Menu
-		menuItem = new Flat.FlatMenuItem("New Text File", this.getFlat().getPalette());
-		fileMenu.add(menuItem); menuNewFile = menuItem;
-		menuItem = new Flat.FlatMenuItem("Open Text File", this.getFlat().getPalette());
-		fileMenu.add(menuItem); menuOpenFile = menuItem;
-		menuItem = new Flat.FlatMenuItem("Save Text File", this.getFlat().getPalette());
-		fileMenu.add(menuItem); menuSaveFile = menuItem;
-		fileMenu.add(new Flat.FlatSeparator(separatorPalette));
-		menuItem = new Flat.FlatMenuItem("Exit", this.getFlat().getPalette());
-		menuItem.setPreferredSize(new Dimension(200, menuItem.getPreferredSize().height));
-		fileMenu.add(menuItem); menuExit = menuItem;
+		this.menuBar.add(new FlatMenu("File")
+				.setMenuIcon(new ImageIcon(TextEditor.class.getResource("/enigma-black_24.png")))
+				.add(new FlatMenuItem("New Text File", e -> newFile())
+						.setShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)))
+				.add(new FlatMenuItem("Open Text File", e -> openFile())
+						.setShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)))
+				.add(new FlatMenuItem("Save Text File", e -> saveFile())
+						.setShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)))
+				.add(new FlatSeparator(separatorPalette))
+				.add(new FlatMenuItem("Exit", e -> window.closeApplication())
+						.setShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK))
+						.setPreferredWidth(200)));
 
 		// Edit Menu
-		menuItem = new Flat.FlatMenuItem("Find", this.getFlat().getPalette());
-		menuItem.setPreferredSize(new Dimension(150, menuItem.getPreferredSize().height));
-		editMenu.add(menuItem); menuFind = menuItem;
+		this.menuBar.add(new FlatMenu("Edit")
+				.add(new FlatMenuItem("Find", e -> displayFindPanel())
+						.setShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK))
+						.setPreferredWidth(150)));
 		
 		// Encr Menu
-		menuItem = new Flat.FlatMenuItem("Open Encrypted Steg. Image", this.getFlat().getPalette());
-		encrMenu.add(menuItem); menuOpenEncSteg = menuItem;
-		menuItem = new Flat.FlatMenuItem("Save Encrypted Steg. Image", this.getFlat().getPalette());
-		encrMenu.add(menuItem); menuSaveEncSteg = menuItem;
-		encrMenu.add(new Flat.FlatSeparator(separatorPalette));
-		menuItem = new Flat.FlatMenuItem("Open Encrypted File", this.getFlat().getPalette());
-		encrMenu.add(menuItem); menuOpenEnc = menuItem;
-		menuItem = new Flat.FlatMenuItem("Save Encrypted File", this.getFlat().getPalette());
-		encrMenu.add(menuItem); menuSaveEnc = menuItem;
-		
+		this.menuBar.add(new FlatMenu("Encrypted")
+				.add(new FlatMenuItem("Open Encrypted Steg. Image", e -> openEncryptedImage()))
+				.add(new FlatMenuItem("Save Encrypted Steg. Image", e -> saveEncryptedImage()))
+				.add(new FlatSeparator(separatorPalette))
+				.add(new FlatMenuItem("Open Encrypted File", e -> openEncrypted()))
+				.add(new FlatMenuItem("Save Encrypted File", e -> saveEncrypted())));
+
 		// Advn Menu
-		menuItem = new Flat.FlatMenuItem("Extract Data", this.getFlat().getPalette());
-		/*advnMenu.add(menuItem);*/ menuExtract = menuItem;
-		menuItem = new Flat.FlatMenuItem("Decrypt File", this.getFlat().getPalette());
-		/*advnMenu.add(menuItem);*/ menuDecrypt = menuItem;
-		menuItem = new Flat.FlatMenuItem("Encrypt File", this.getFlat().getPalette());
-		/*advnMenu.add(menuItem);*/ menuEncrypt = menuItem;
-		
-		// Viwr Menu
-		menuItem = new Flat.FlatMenuItem("Open File", this.getFlat().getPalette());
-		viwrMenu.add(menuItem); menuOpenInBinViewer = menuItem;
-		menuItem = new Flat.FlatMenuItem("Close Viewer", this.getFlat().getPalette());
-		viwrMenu.add(menuItem); menuCloseBinViewer = menuItem;
-		advnMenu.add(viwrMenu);
+		this.menuBar.add(new FlatMenu("Advanced")
+//				.add(new FlatMenuItem("Extract Data", e -> writeConsole("Unimplemented functionality.")))
+//				.add(new FlatMenuItem("Decrypt File", e -> writeConsole("Unimplemented functionality.")))
+//				.add(new FlatMenuItem("Encrypt File", e -> writeConsole("Unimplemented functionality.")))
+				.add(new FlatMenu("Binary Viewer")
+						.add(new FlatMenuItem("Open File", e -> openFileInBinaryViewer())))
+						.add(new FlatMenuItem("Close Viewer", e -> closeBinaryViewer())));
 		
 		// Help Menu
-		menuItem = new Flat.FlatMenuItem("About", this.getFlat().getPalette());
-		helpMenu.add(menuItem); menuAbout = menuItem;
-		menuItem = new Flat.FlatMenuItem("How To", this.getFlat().getPalette());
-		helpMenu.add(menuItem); menuHowTo = menuItem;
-		
-		this.menuBar.add(fileMenu);
-		this.menuBar.add(editMenu);
-		this.menuBar.add(encrMenu);
-		this.menuBar.add(advnMenu);
-		this.menuBar.add(helpMenu);
-	}
-	
-	private void setMenuItemMnemonics() {
-		menuNewFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-		menuOpenFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		menuSaveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-		menuExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
-		menuFind.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.CTRL_MASK));
-	}
-	
-	private void attachMenuItemEvents() {
-		
-		// file menu
-		menuNewFile.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	newFile();
-		    }
-		});
-		menuOpenFile.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	openFile();
-		    }
-		});
-		menuSaveFile.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	saveFile();
-		    }
-		});
-		menuExit.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	window.closeApplication();
-		    }
-		});
-		
-		// edit menu
-		menuFind.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	displayFindPanel();
-		    }
-		});
-		
-		// encrypted menu
-		menuOpenEnc.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	openEncrypted();
-		    }
-		});
-		menuSaveEnc.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	saveEncrypted();
-		    }
-		});
-		menuOpenEncSteg.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	openEncryptedImage();
-		    }
-		});
-		menuSaveEncSteg.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	saveEncryptedImage();
-		    }
-		});
-		
-		// advanced menu
-		menuExtract.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-				writeConsole("Unimplemented functionality.");
-		    }
-		});
-		menuDecrypt.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-				writeConsole("Unimplemented functionality.");
-		    }
-		});
-		menuEncrypt.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-				writeConsole("Unimplemented functionality.");
-		    }
-		});
-		menuOpenInBinViewer.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	openFileInBinaryViewer();
-		    }
-		});
-		menuCloseBinViewer.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	closeBinaryViewer();
-		    }
-		});
-		
-		// help menu
-		menuAbout.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	openAboutScreen();
-		    }
-		});
-		menuHowTo.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-				openHowToScreen();
-		    }
-		});
+		this.menuBar.add(new FlatMenu("Help")
+				.add(new FlatMenuItem("About", e -> openAboutScreen())))
+				.add(new FlatMenuItem("How To", e -> openHowToScreen()));
 	}
 	
 	private void displayFindPanel() {
@@ -830,13 +728,28 @@ public class TextEditor extends FlatFrame {
 			}
 		});
 	}
-	
+
+	/**
+	 * Set whether the document has changed since opening.
+	 *
+	 * @param changed
+	 */
 	private void setDocumentChanged(boolean changed) {
+		this.documentChanged = changed;
 		if(changed) {
 			windowTitle.setText(APP_TITLE + "*");
 		} else {
 			windowTitle.setText(APP_TITLE);
 		}
+	}
+
+	/**
+	 * Determine whether the document has changed since opening
+	 *
+	 * @return
+	 */
+	private boolean getDocumentChanged() {
+		return this.documentChanged;
 	}
 	
 	/**
