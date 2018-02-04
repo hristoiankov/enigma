@@ -1,6 +1,7 @@
 package ui.flat.dialog;
 
 import ui.flat.component.FlatButton;
+import ui.flat.images.Icons;
 import ui.flat.settings.FlatColorPalette;
 
 import java.awt.BorderLayout;
@@ -123,7 +124,7 @@ public class FlatDialog extends JDialog implements
 	}
 	
 	public FlatDialog(Frame parent, String title) {
-		this(parent, title, Color.black, new Color(200,200,200), Color.black);
+		this(parent, title, FlatColorPalette.BLACK, FlatColorPalette.LIGHT_GRAY, FlatColorPalette.BLACK);
 		this.parent = parent;
 		this.setMinimumSize(new Dimension(200, 20));
 	}
@@ -177,10 +178,14 @@ public class FlatDialog extends JDialog implements
 		contentPane = new JPanel(new BorderLayout());
 		topPane = new JPanel(new BorderLayout());
 		menuBar = new JMenuBar();
-		FlatColorPalette buttonPalette = new FlatColorPalette();
-		buttonPalette.setBackgroundColor(Color.black);
-		buttonPalette.setBorderColor(Color.black);
-		closeButton = new FlatButton("Close", buttonPalette, e -> this.setVisible(false));
+		FlatColorPalette buttonPalette = new FlatColorPalette()
+				.setBackgroundColor(FlatColorPalette.BLACK)
+				.setBorderColor(FlatColorPalette.BLACK)
+				.setHoverBackgroundColor(FlatColorPalette.RED);
+		closeButton = new FlatButton("", buttonPalette, e -> this.setVisible(false))
+				.setIcon(Icons.CLOSE_ICON_BLACK_LIGHT_GRAY)
+				.setRolloverIcon(Icons.CLOSE_ICON_RED_LIGHT_GRAY)
+				.setPressedIcon(Icons.CLOSE_ICON_RED_LIGHT_GRAY);
 		windowTitle = new JLabel(this.getTitle());
 	}
 	

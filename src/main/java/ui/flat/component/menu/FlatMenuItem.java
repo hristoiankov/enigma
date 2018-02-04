@@ -17,7 +17,7 @@ public class FlatMenuItem extends JMenuItem {
     }
 
     public FlatMenuItem setPreferredWidth(int width) {
-        this.setPreferredSize(new Dimension(200, this.getPreferredSize().height));
+        this.setPreferredSize(new Dimension(width, this.getPreferredSize().height));
         return this;
     }
 

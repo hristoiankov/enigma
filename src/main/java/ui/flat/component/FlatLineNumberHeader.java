@@ -1,5 +1,7 @@
 package ui.flat.component;
 
+import ui.flat.settings.FlatColorPalette;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -23,7 +25,8 @@ public class FlatLineNumberHeader extends JList {
 
     public FlatLineNumberHeader(final JTextPane textPane) {
         this(textPane,
-                new Color(0,0,0), new Color(100,100,100), new Color(51,204,255), new Color(0,0,0));
+                FlatColorPalette.BLACK, new Color(100,100,100),
+                new Color(51,204,255), FlatColorPalette.BLACK);
     }
 
     public FlatLineNumberHeader(final JTextPane textPane,

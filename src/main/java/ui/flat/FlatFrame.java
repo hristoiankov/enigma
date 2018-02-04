@@ -3,6 +3,7 @@ package ui.flat;
 import ui.flat.component.FlatButton;
 import ui.flat.component.FlatPanel;
 import ui.flat.component.menu.FlatMenuBar;
+import ui.flat.images.Icons;
 import ui.flat.settings.FlatColorPalette;
 
 import java.awt.BorderLayout;
@@ -12,21 +13,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 public class FlatFrame extends JFrame implements 
 	MouseListener, MouseMotionListener, ComponentListener{
@@ -51,6 +44,7 @@ public class FlatFrame extends JFrame implements
 	protected FlatMenuBar menuBar;
 	protected JLabel windowTitle;
 	protected FlatButton closeButton;
+	protected FlatButton maximizeButton;
 	protected FlatButton minimizeButton;
 	
 	protected Color frameBackgroundColor;
@@ -68,8 +62,8 @@ public class FlatFrame extends JFrame implements
 	//-----------------------------------------------------
     
     public FlatFrame(String title) {
-    	this(title, new Color(60,60,60), new Color(200,200,200),
-    				new Color(60,60,60));
+    	this(title, FlatColorPalette.DARK_GRAY, FlatColorPalette.LIGHT_GRAY,
+    				FlatColorPalette.DARK_GRAY);
     }
     
 	public FlatFrame(String title, 
@@ -95,6 +89,7 @@ public class FlatFrame extends JFrame implements
 		topPane.add(this.windowTitle, BorderLayout.CENTER);
 		topPane.add(this.topRightPane, BorderLayout.EAST);
 		topRightPane.add(this.minimizeButton);
+		topRightPane.add(this.maximizeButton);
 		topRightPane.add(this.closeButton);
 		contentPane.add(this.topPane, BorderLayout.NORTH);
 		this.setContentPane(this.contentPane);
@@ -115,14 +110,27 @@ public class FlatFrame extends JFrame implements
 		this.topRightPane = new FlatPanel();
 		this.topRightPane.setLayout(new BoxLayout(topRightPane, BoxLayout.X_AXIS));
 		this.menuBar = new FlatMenuBar();
-		this.closeButton = new FlatButton("Close", e -> window.closeApplication());
-		this.minimizeButton = new FlatButton("Min", FlatColorPalette.DEFAULT_PALETTE, e -> {
+		this.closeButton = new FlatButton("",
+				new FlatColorPalette().setHoverBackgroundColor(FlatColorPalette.RED),
+				e -> window.closeApplication())
+				.setIcon(Icons.CLOSE_ICON_DARK_GRAY_LIGHT_GRAY)
+				.setRolloverIcon(Icons.CLOSE_ICON_RED_LIGHT_GRAY);
+		this.maximizeButton = new FlatButton("", FlatColorPalette.DEFAULT_PALETTE, e -> {
+			if(window.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+				window.setExtendedState(JFrame.NORMAL);
+			} else {
+				window.setExtendedState(JFrame.MAXIMIZED_BOTH);
+			}
+		}).setIcon(Icons.MAXIMIZE_ICON_DARK_GRAY_LIGHT_GRAY)
+				.setRolloverIcon(Icons.MAXIMIZE_ICON_LIGHT_GRAY_DARK_GRAY);
+		this.minimizeButton = new FlatButton("", FlatColorPalette.DEFAULT_PALETTE, e -> {
 			if(window.getExtendedState() == JFrame.ICONIFIED) {
 				window.setExtendedState(JFrame.NORMAL);
 			} else {
 				window.setExtendedState(JFrame.ICONIFIED);
 			}
-		});
+		}).setIcon(Icons.MINIMIZE_ICON_DARK_GRAY_LIGHT_GRAY)
+				.setRolloverIcon(Icons.MINIMIZE_ICON_LIGHT_GRAY_DARK_GRAY);
 		this.windowTitle = new JLabel(this.getTitle());
 	}
 	
@@ -133,8 +141,9 @@ public class FlatFrame extends JFrame implements
 	    topPane.setBackground(frameBackgroundColor);
 	    topRightPane.setBackground(frameBackgroundColor);
 	    windowTitle.setForeground(frameForegroundColor);
-		closeButton.setFocusPainted(false);
-		minimizeButton.setFocusPainted(false);
+//		closeButton.setFocusPainted(false);
+//		maximizeButton.setFocusPainted(false);
+//		minimizeButton.setFocusPainted(false);
 		windowTitle.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		// set panel border

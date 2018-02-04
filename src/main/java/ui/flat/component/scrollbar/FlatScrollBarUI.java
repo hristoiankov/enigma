@@ -1,5 +1,7 @@
 package ui.flat.component.scrollbar;
 
+import ui.flat.settings.FlatColorPalette;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -19,7 +21,7 @@ public class FlatScrollBarUI extends BasicScrollBarUI{
     private int orientation;
 
 	public FlatScrollBarUI(int orientation) {
-		this(orientation, new Color(0,0,0), new Color(60,60,60));
+		this(orientation, FlatColorPalette.BLACK, FlatColorPalette.DARK_GRAY);
 	}
 	
 	public FlatScrollBarUI(int orientation, Color trackColor, Color thumbColor) {

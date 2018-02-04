@@ -58,7 +58,7 @@ import ui.flat.settings.FlatColorPalette;
 public class TextEditor extends FlatFrame {
 	
 	private static final String APP_TITLE = "Enigma Text Editor";
-	private static float APP_VERSION = 0.15f;
+	private static float APP_VERSION = 0.16f;
 	private static final int APP_YEAR = 2018;
 	private static final int CONSOLE_TIMEOUT_SHORT = 3000;
 	private static final int CONSOLE_TIMEOUT_LONG = 8000;
@@ -98,9 +98,9 @@ public class TextEditor extends FlatFrame {
 
 	public TextEditor() {
 		super(APP_TITLE,
-			  new Color(60,60,60),
-			  new Color(200,200,200),
-			  new Color(60,60,60));
+			  FlatColorPalette.DARK_GRAY,
+			  FlatColorPalette.LIGHT_GRAY,
+			  FlatColorPalette.DARK_GRAY);
         
         // reference self
         window = this;
@@ -256,8 +256,8 @@ public class TextEditor extends FlatFrame {
 		editorBackgroundColor = this.frameBackgroundColor;
 		editorForegroundColor = this.frameForegroundColor;
 		selectionBackgroundColor = new Color(51,204,255);
-		selectionForegroundColor = new Color(0, 0, 0);
-        
+		selectionForegroundColor = FlatColorPalette.BLACK;
+
         menuBar.setBackground(editorBackgroundColor);
         menuBar.setForeground(editorForegroundColor);
         menuBar.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, frameBorderColor));
@@ -272,15 +272,15 @@ public class TextEditor extends FlatFrame {
 	    editorPane.setCaretColor(Color.white);
 	    editorPane.setSelectionColor(selectionBackgroundColor);
 	    editorPane.setSelectedTextColor(selectionForegroundColor);
-	    
+
 	    consolePane.setForeground(editorForegroundColor);
 	    consolePane.setBackground(editorBackgroundColor);
 	    consolePane.setFont(consoleFont);
         consoleScrollPane.setBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, frameBorderColor));
 
-	    
+
 	    editorScrollPane.setBackground(Color.black);
-	    
+
 	    // set global styling
 	    /*UIManager.put("Panel.opaque", true);
 	    UIManager.put("Panel.background", editorBackgroundColor);
@@ -313,8 +313,8 @@ public class TextEditor extends FlatFrame {
 	    //UIManager.put("Button.border", BorderFactory.createMatteBorder(0, 0, 0, 0, panelBorderColor));
 	    //UIManager.put("Button.borderPainted", false);
 	    //UIManager.put("Button.focus", Color.black);
-	    
-		
+
+
 	}
 	
 	private void populateTopPane() {

@@ -48,7 +48,7 @@ public class FlatPasswordDialog extends FlatDialog {
 		
 		optionsPanel.setBackground(frameBackgroundColor);
 		passwordField.setForeground(frameForegroundColor);
-		passwordField.setBackground(new Color(60,60,60));
+		passwordField.setBackground(FlatColorPalette.DARK_GRAY);
 		passwordField.getCaret().setVisible(true);
 		passwordField.setCaretColor(Color.white);
 		passwordField.setBorder(BorderFactory.createMatteBorder(

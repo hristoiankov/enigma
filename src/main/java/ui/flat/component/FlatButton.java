@@ -17,4 +17,37 @@ public class FlatButton extends JButton {
                 new BorderDimensions(4,4,4,4));
         this.addActionListener(onClick);
     }
+
+    /**
+     * Set the default icon
+     *
+     * @param icon
+     * @return
+     */
+    public FlatButton setIcon(final ImageIcon icon) {
+        super.setIcon(icon);
+        return this;
+    }
+
+    /**
+     * Set the rollover icon
+     *
+     * @param icon
+     * @return
+     */
+    public FlatButton setRolloverIcon(final ImageIcon icon) {
+        super.setRolloverIcon(icon);
+        return this;
+    }
+
+    /**
+     * Set the pressed icon
+     *
+     * @param icon
+     * @return
+     */
+    public FlatButton setPressedIcon(final ImageIcon icon) {
+        super.setPressedIcon(icon);
+        return this;
+    }
 }
