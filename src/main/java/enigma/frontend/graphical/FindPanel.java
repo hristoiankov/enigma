@@ -15,6 +15,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 
 import ui.flat.component.FlatButton;
+import ui.flat.images.Icons;
 import ui.flat.settings.FlatColorPalette;
 import ui.flat.component.FlatPanel;
 import ui.flat.component.FlatTextField;
@@ -46,10 +47,11 @@ public class FindPanel extends FlatPanel {
         this.add(searchField);
         this.add(new FlatButton("Find Next", palette, e ->
             findNextResult(panel.editorPane, panel.searchField.getText())));
-        this.add(new FlatButton("X", palette, e -> {
+        this.add(new FlatButton("", palette, e -> {
             panel.setVisible(false);
             resetHighlighting();
-        }));
+        }).setIcon(Icons.CLOSE_ICON_LIGHT_GRAY_DARK_GRAY)
+                .setRolloverIcon(Icons.CLOSE_ICON_DARK_GRAY_LIGHT_GRAY));
 
         // set highlighting attribute color
         highlightAttribute = new SimpleAttributeSet();

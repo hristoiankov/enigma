@@ -160,12 +160,9 @@ public class TextEditor extends FlatFrame {
 		//
 		
 		// create find panel
-		FlatColorPalette findPanelPalette = FlatColorPalette.DEFAULT_PALETTE.clone()
-				.setForegroundColor(FlatColorPalette.DEFAULT_PALETTE.getBackgroundColor())
-				.setBackgroundColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor())
-				.setBorderColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor())
-				.setHoverForegroundColor(FlatColorPalette.DEFAULT_PALETTE.getBackgroundColor())
-				.setHoverBackgroundColor(FlatColorPalette.DEFAULT_PALETTE.getForegroundColor());
+		FlatColorPalette findPanelPalette = new FlatColorPalette.ImmutableFlatColorPalette(
+				FlatColorPalette.LIGHT_GRAY, FlatColorPalette.DARK_GRAY, FlatColorPalette.LIGHT_GRAY,
+				FlatColorPalette.DARK_GRAY, FlatColorPalette.LIGHT_GRAY, FlatColorPalette.DARK_GRAY);
 		this.findPane = new FindPanel(findPanelPalette, editorPane,
 				editorVerticalScrollBar);
 		
