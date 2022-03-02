@@ -44,6 +44,6 @@ When the encrypted image is opened and the correct key is supplied, these are th
 * Operating System: Windows, Linux, Unix
 * Minimum Java Version: Java 8
 
-**Downloads:**
+**Download:**
 
-The download is in a work-in-progress beta stage.
+https://github.com/hristoiankov/enigma/releases/download/0.14/enigma-0.14.jar
