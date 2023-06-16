@@ -1,8 +1,16 @@
-# Enigma Text Editor
-<p align="center">
-  <img alt="Enigma" src="https://raw.githubusercontent.com/hristoiankov/enigma/master/md-res/enigma-short.png"
-</p>
+<div align="center">
 
+![image-enigma]
+
+# Enigma Steganography Editor
+
+[![][stars]][gh-url]
+[![][release]][gh-url]
+[![][last-commit]][gh-url]
+  
+</div>
+
+# About Enigma
 Enigma began as an idea to provide a simple standalone multi-platform solution for storing sensitive data. In its current state Enigma is a text editor with file encryption/decryption capability. The application utilizes the trusted Java Cryptography Extension (JCE) in the back-end for its encryption capability. Enigma further employs steganography techniques to conceal data into other inconspicuous file types.
 
 <p align="center">
@@ -46,4 +54,13 @@ When the encrypted image is opened and the correct key is supplied, these are th
 
 **Download:**
 
-https://github.com/hristoiankov/enigma/releases/download/0.14/enigma-0.14.jar
+[v0.14 Windows x86-64][windows-download]
+
+[gh-url]: https://github.com/hristoiankov/enigma
+[image-enigma]: md-res/enigma-short.png
+[last-commit]: https://img.shields.io/github/last-commit/hristoiankov/enigma
+[license]: https://badgen.net/github/license/hristoiankov/enigma?cache=600
+[stars]: https://badgen.net/github/stars/hristoiankov/enigma?cache=600
+[release]: https://badgen.net/github/release/hristoiankov/enigma?cache=600
+[windows-download]: https://github.com/hristoiankov/enigma/releases/download/0.14/enigma-0.14.jar
+
